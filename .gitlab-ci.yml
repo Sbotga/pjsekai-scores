@@ -1,0 +1,14 @@
+image: python:latest
+
+before_script:
+  - python --version
+  - pip --version
+
+deploy:
+  stage: deploy
+  script:
+    - pip install --upgrade build twine
+    - python -m build 
+    - python -m twine upload dist/* --username __token__ --password $PYPI_PASSWORD
+  only:
+    - tags
