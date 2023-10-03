@@ -37,11 +37,11 @@ drawing.svg().saveas('1.svg')
 
 譜面ファイルを個性化して豊かにするカスタマイズ機能を提供しています。下記の文書をご参照ください：
 
-* [BPM、拍子、セクションを変換]()
+* [BPM、拍子、セクションを変換](https://gitlab.com/pjsekai/scores/-/wikis/rebase)
 
-* [歌詞を追加]()
+* [歌詞を追加](https://gitlab.com/pjsekai/scores/-/wikis/lyric)
 
-* [スタイルシートをカスタマイズ]()
+* [スタイルシートをカスタマイズ](https://gitlab.com/pjsekai/scores/-/wikis/css)
 
 ## License
 
