@@ -4,22 +4,24 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pjsekai.scores"
-version = "0.0.1"
-authors = [
-  { name="Amaoto", email="amaoto@pjsekai.moe" },
-]
+version = "0.1.0"
 description = "Render Project Sekai score files (sus) to images (svg). "
 readme = "README.md"
 requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Amaoto", email = "amaoto@pjsekai.moe" }]
+keywords = ["Project Sekai", "pjsekai", "SUS"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dependencies = ["svgwrite"]
 
 [project.urls]
-"Homepage" = "https://github.com/pypa/sampleproject"
-"Bug Tracker" = "https://github.com/pypa/sampleproject/issues"
+"Homepage" = "https://gitlab.com/pjsekai/scores"
+"Documentation" = "https://gitlab.com/pjsekai/scores/-/wikis"
+"Bug Tracker" = "https://gitlab.com/pjsekai/scores/-/issues"
 
 [tool.setuptools.package-data]
 "*" = ["*.css"]
