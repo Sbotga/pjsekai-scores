@@ -20,10 +20,10 @@ class Main:
         parser.add_argument('score', metavar='<xxx.sus>', help='the pjsekai score file')
         parser.add_argument('--rebase', metavar='<xxx.json>', help='customized bpm, beats and sections')
         parser.add_argument('--lyric', metavar='<xxx.txt>', help='lyrics')
+        parser.add_argument('--css', metavar='<xxx.css>', help='style sheets')
         parser.add_argument('--note-host', dest='note_host', metavar='<url>',
                             default='https://asset3.pjsekai.moe/live/note/custom01',
                             help='the base dir of asset files for notes')
-        parser.add_argument('--css', metavar='<xxx.css>', help='style sheets')
 
         parser.add_argument('-o', '--output', metavar='<xxx.svg>')
         args = parser.parse_args()
@@ -55,11 +55,11 @@ class Main:
             with open(args.lyric, encoding='UTF-8') as f:
                 self.lyric = Lyric.load(f)
 
-        self.note_host = args.note_host
-
         if args.css:
             with open(args.css, encoding='UTF-8') as f:
                 self.css = f.read()
+
+        self.note_host = args.note_host
 
         return self
 
@@ -68,7 +68,7 @@ class Main:
         if self.rebase:
             s = self.rebase.rebase(self.score)
 
-        d = Drawing(score=s, lyric=self.lyric, note_host=self.note_host, style_sheet=self.css)
+        d = Drawing(score=s, lyric=self.lyric, style_sheet=self.css, note_host=self.note_host)
         d.svg().saveas(self.output)
 
 

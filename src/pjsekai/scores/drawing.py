@@ -26,8 +26,8 @@ class Drawing:
         self,
         score: Score,
         lyric: Lyric,
-        note_host: str = 'https://asset3.pjsekai.moe/live/note/custom01',
         style_sheet: str = '',
+        note_host: str = 'https://asset3.pjsekai.moe/live/note/custom01',
         **kwargs,
     ):
 
