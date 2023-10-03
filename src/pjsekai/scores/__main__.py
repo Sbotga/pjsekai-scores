@@ -66,7 +66,7 @@ class Main:
     def __call__(self):
         s = self.score
         if self.rebase:
-            s = self.rebase.rebase(self.score)
+            s = self.rebase(self.score)
 
         d = Drawing(score=s, lyric=self.lyric, style_sheet=self.css, note_host=self.note_host)
         d.svg().saveas(self.output)

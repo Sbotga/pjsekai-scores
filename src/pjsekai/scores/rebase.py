@@ -41,12 +41,12 @@ class Rebase:
             meta=Meta(**d.get('meta', {})),
         )
 
-    def rebase(rebase, self: Score) -> Score:
+    def __call__(rebase, self: Score) -> Score:
         score = Score()
         score.meta = self.meta | rebase.meta
         score.events = rebase.events
 
-        def rebase_note(note_0):
+        def rebase_note(note_0: Note):
             return dataclasses.replace(
                 note_0,
                 bar=score.get_bar_by_time(self.get_time(note_0.bar) - rebase.offset),
@@ -88,3 +88,6 @@ class Rebase:
         score._init_notes()
         score._init_events()
         return score
+
+    def rebase(rebase, self: Score) -> Score:
+        return rebase(self)
