@@ -487,6 +487,9 @@ class DrawingSentence(Drawing):
         src = '%s/notes_flick_arrow%s_0%s%s.png'
         y = self.time_height * self.score.get_time_delta(note.bar, self.bar.stop) + self.time_padding
 
+        if note.is_none():
+            return
+
         type = DirectionalType.UP
         if isinstance(note, Directional):
             if note.type == DirectionalType.UPPER_LEFT:
