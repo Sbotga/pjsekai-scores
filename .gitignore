@@ -1,0 +1,13 @@
+*.svg
+*.lyric
+*.sus
+*.json
+
+.DS_Store
+__pycache__
+
+note/
+build/
+dist/
+
+*.egg-info
