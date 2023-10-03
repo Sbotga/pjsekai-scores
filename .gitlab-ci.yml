@@ -11,5 +11,3 @@ deploy:
     - python -m build
     - echo $PYPI_PASSWORD
     - python -m twine upload dist/* --username __token__ --password $PYPI_PASSWORD
-  only:
-    - tags
