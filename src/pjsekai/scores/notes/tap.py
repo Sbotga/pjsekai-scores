@@ -11,7 +11,7 @@ class Tap(Note):
         return hash(str(self))
 
     def is_critical(self):
-        if self.type in (TapType.CRITICAL, TapType.CRITICAL_TREND):
+        if self.type in (TapType.CRITICAL, TapType.CRITICAL_TREND, TapType.CRITICAL_CANCEL):
             return True
 
         return False
@@ -23,7 +23,7 @@ class Tap(Note):
         return False
 
     def is_none(self):
-        if self.type in (TapType.SLIDE_START_CANCEL, TapType.SLIDE_END_CANCEL):
+        if self.type in (TapType.CANCEL, TapType.CRITICAL_CANCEL):
             return True
 
         return False
@@ -44,5 +44,5 @@ class TapType(enum.IntEnum):
     DAMAGE = 4
     TREND = 5
     CRITICAL_TREND = 6
-    SLIDE_START_CANCEL = 7
-    SLIDE_END_CANCEL = 8
+    CANCEL = 7
+    CRITICAL_CANCEL = 8

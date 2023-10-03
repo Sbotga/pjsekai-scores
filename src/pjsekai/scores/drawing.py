@@ -389,15 +389,9 @@ class DrawingSentence(Drawing):
 
         class_name: str
         if slide.decoration:
-            if slide.head.tap and slide.head.tap.type in (TapType.CRITICAL, 8):
-                class_name = 'decoration-critical'
-            else:
-                class_name = 'decoration'
+            class_name = 'decoration-critical' if slide.is_critical() else 'decoration'
         else:
-            if slide.head.tap and slide.head.tap.type == TapType.CRITICAL:
-                class_name = 'slide-critical'
-            else:
-                class_name = 'slide'
+            class_name = 'slide-critical' if slide.is_critical() else 'slide'
 
         self.slide_paths.append(
             svgwrite.path.Path(
@@ -654,10 +648,14 @@ class DrawingSentence(Drawing):
                     self.add_slide_path(note)
                     if note.tap:
                         self.add_note_images(note.tap)
+                        if note.directional:
+                            self.add_flick_image(note)
 
                 elif note.type == SlideType.END:
                     if note.tap:
                         self.add_note_images(note.tap)
+                        if note.directional:
+                            self.add_flick_image(note)
 
                 elif note.type == SlideType.RELAY:
                     ...
