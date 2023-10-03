@@ -1,17 +1,25 @@
 import dataclasses
 
 from .base import BaseNote
+from ..types import Fraction
 
 
 @dataclasses.dataclass
 class Event(BaseNote):
-    bpm: float = None
-    bar_length: int = None
+    bpm: Fraction = None
+    bar_length: Fraction = None
     sentence_length: int = None
     speed: float = None
 
     section: str = None
     text: str = None
+
+    def __post_init__(self):
+        if self.bpm is not None:
+            self.bpm = Fraction(self.bpm)
+
+        if self.bar_length is not None:
+            self.bar_length = Fraction(self.bar_length)
 
     def __hash__(self) -> int:
         return hash(str(self))

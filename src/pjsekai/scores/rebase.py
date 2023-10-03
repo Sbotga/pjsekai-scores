@@ -2,6 +2,7 @@ import json
 import dataclasses
 
 from .notes import *
+from .types import *
 
 from .score import *
 from .meta import *
