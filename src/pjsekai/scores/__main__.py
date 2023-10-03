@@ -35,7 +35,7 @@ class Main:
             if os.path.isdir(args.output):
                 self.output = os.path.join(
                     os.path.dirname(args.output),
-                    os.path.splitext(self.input) + '.svg',
+                    os.path.splitext(self.input)[0] + '.svg',
                 )
             else:
                 self.output = str(args.output)

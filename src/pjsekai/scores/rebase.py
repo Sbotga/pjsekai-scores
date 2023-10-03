@@ -34,6 +34,7 @@ class Rebase:
                     bar_length=event.get('barLength'),
                     sentence_length=event.get('sentenceLength'),
                     section=event.get('section'),
+                    text=event.get('text'),
                 )
                 for event in d.get('events', [])
             ],

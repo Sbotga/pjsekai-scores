@@ -94,8 +94,7 @@ class Line:
 
         elif match := re.match(r'^(\d\d\d)08$', self.header):
             for beat, data in self.parse_score_data():
-                # Event(bar=int(match.group(1)) + beat, bpm=bpms[data])
-                yield BpmReference(bar=int(match.group(1), 36) + beat, id=int(data, 36))
+                yield BpmReference(bar=int(match.group(1)) + beat, id=int(data, 36))
 
         elif match := re.match(r'^TIL(..)$', self.header):
             id = int(match.group(1), 36)
