@@ -1,10 +1,9 @@
 [build-system]
 requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+build-backend = "setuptools.build_meta:__legacy__"
 
 [project]
 name = "pjsekai.scores"
-version = "0.1.5"
 description = "Render Project Sekai score files (sus) to images (svg). "
 readme = "README.md"
 requires-python = ">=3.10"
@@ -17,6 +16,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = ["svgwrite"]
+dynamic = ["version"]
 
 [project.urls]
 "Homepage" = "https://gitlab.com/pjsekai/scores"
