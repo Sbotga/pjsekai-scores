@@ -501,6 +501,13 @@ class DrawingSentence(Drawing):
                 type = DirectionalType.UPPER_LEFT
             elif note.directional.type == DirectionalType.UPPER_RIGHT:
                 type = DirectionalType.UPPER_RIGHT
+            elif note.directional.type == DirectionalType.UP:
+                type = DirectionalType.UP
+            else:
+                type = None
+
+        if type is None:
+            return
 
         width = note.width if note.width < 6 else 6
 
