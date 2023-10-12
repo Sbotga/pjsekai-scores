@@ -4,11 +4,10 @@ before_script:
   - python --version
   - pip --version
 
-deploy:
-  stage: deploy
+run:
   script:
-    - pip install --upgrade build twine
+    - pip install build twine
     - python -m build
-    - python -m twine upload dist/* --username __token__ --password $PYPI_PASSWORD
+    - python -m twine upload dist/* --username gitlab-ci-token --password $CI_JOB_TOKEN
   only:
     - tags
