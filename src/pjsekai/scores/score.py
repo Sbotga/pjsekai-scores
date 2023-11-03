@@ -205,8 +205,10 @@ class Score:
     def print(self, bar_from: int, bar_to: int):
         for note in self.notes:
             if bar_from <= note.bar < bar_to:
-                print(note, note.is_tick())
+                print(note, f'{note.is_trend() = }')
                 if hasattr(note, 'tap') and note.tap:
-                    print('    tap:', note.tap, note.tap.is_tick())
+                    print('    tap:', note.tap, f'{note.tap.is_trend() = }')
                 if hasattr(note, 'directional') and note.directional:
-                    print('    directional:', note.directional, note.directional.is_tick())
+                    print('    directional:', note.directional, f'{note.directional.is_trend() = }')
+
+                print()

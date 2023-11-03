@@ -656,22 +656,20 @@ class DrawingSentence(Drawing):
             elif isinstance(note, Slide) and note.decoration:
                 if note.type == SlideType.START:
                     self.add_slide_path(note)
-                    if note.tap:
-                        self.add_note_images(note.tap)
-                        if note.directional:
-                            self.add_flick_image(note)
 
                 elif note.type == SlideType.END:
-                    if note.tap:
-                        self.add_note_images(note.tap)
-                        if note.directional:
-                            self.add_flick_image(note)
+                    ...
 
                 elif note.type == SlideType.RELAY:
                     ...
 
                 elif note.type == SlideType.INVISIBLE:
                     ...
+
+                if note.tap:
+                    self.add_note_images(note.tap)
+                    if note.directional:
+                        self.add_flick_image(note)
 
         height = self.time_height * self.score.get_time_delta(self.bar.start, self.bar.stop)
 
