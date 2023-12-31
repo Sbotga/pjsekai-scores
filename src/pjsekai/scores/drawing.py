@@ -602,11 +602,16 @@ class DrawingSentence(Drawing):
         for i, note in enumerate(self.score.notes):
             if isinstance(note, Slide):
                 slide: Slide = note.head
+                before = None
                 while slide:
                     while not slide.is_path():
                         slide = slide.next
 
-                    if self.bar.start - 1 <= slide.bar < self.bar.stop + 1:
+                    if self.bar.start - 1 <= slide.bar < self.bar.stop + 1:  # in
+                        break
+                    elif slide.bar < self.bar.start - 1:  # before
+                        before = True
+                    elif before and self.bar.stop + 1 < slide.bar:  # after
                         break
 
                     slide = slide.next
