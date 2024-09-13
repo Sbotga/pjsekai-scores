@@ -1,6 +1,6 @@
 import os
 import setuptools
 
-version = os.environ.get("CI_COMMIT_TAG", "v0")
+version = "v0.1.10"
 
 setuptools.setup(version=version)

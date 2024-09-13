@@ -43,8 +43,8 @@ push = true
     'current_version = "{version}"',
 ]
 "setup.py" = [
-    "{version}",
-    "{pep440_version}",
+    "versio = {version}",
+    "versio = {pep440_version}",
 ]
 "README.md" = [
     "{version}",
