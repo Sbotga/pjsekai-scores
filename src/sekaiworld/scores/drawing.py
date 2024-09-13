@@ -231,7 +231,7 @@ class Drawing:
         ))
 
         drawing.add(svgwrite.image.Image(
-            href=self.score.meta.jacket or 'https://asset3.pjsekai.moe/thumbnail/chara/res009_no021_normal.png',
+            href=self.score.meta.jacket or 'https://storage.sekai.best/sekai-jp-assets/thumbnail/chara_rip/res009_no021_normal.png',
             insert=(
                 self.lane_padding * 2,
                 height + self.time_padding * 3,
@@ -255,7 +255,7 @@ class Drawing:
             ' '.join(filter(lambda x: x, [
                 self.score.meta.difficulty and str(self.score.meta.difficulty).upper(),
                 self.score.meta.playlevel,
-                '譜面確認 by pjsekai.moe'
+                'Chart by sekai.best powered by pjsekai.moe'
             ])),
             insert=(
                 self.meta_size + self.lane_padding * 4,
