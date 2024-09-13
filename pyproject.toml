@@ -3,12 +3,12 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta:__legacy__"
 
 [project]
-name = "pjsekai.scores"
-description = "Render Project Sekai score files (sus) to images (svg). "
+name = "sekaiworld.scores"
+description = "Render Project Sekai score files (sus) to images (svg). Powered by pjsekai/scores."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
-authors = [{ name = "Amaoto", email = "amaoto@pjsekai.moe" }]
+authors = [{ name = "Sekai World", email = "dev@sekai.best" }]
 keywords = ["Project Sekai", "pjsekai", "SUS"]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -19,9 +19,35 @@ dependencies = ["svgwrite"]
 dynamic = ["version"]
 
 [project.urls]
-"Homepage" = "https://gitlab.com/pjsekai/scores"
-"Documentation" = "https://gitlab.com/pjsekai/scores/-/wikis"
-"Bug Tracker" = "https://gitlab.com/pjsekai/scores/-/issues"
+"Homepage" = "https://github.com/Sekai-World/pjsekai-scores"
+"Documentation" = "https://github.com/Sekai-World/pjsekai-scores/wiki"
+"Bug Tracker" = "https://github.com/Sekai-World/pjsekai-scores/issues"
 
 [tool.setuptools.package-data]
 "*" = ["*.css"]
+
+[tool.bumpver]
+current_version = "v0.1.10"
+version_pattern = "vMAJOR.MINOR.PATCH[PYTAGNUM]"
+commit_message = "bump version {old_version} -> {new_version}"
+tag_message = "{new_version}"
+tag_scope = "default"
+pre_commit_hook = ""
+post_commit_hook = ""
+commit = true
+tag = true
+push = true
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = [
+    'current_version = "{version}"',
+]
+"setup.py" = [
+    "{version}",
+    "{pep440_version}",
+]
+"README.md" = [
+    "{version}",
+    "{pep440_version}",
+]
+
