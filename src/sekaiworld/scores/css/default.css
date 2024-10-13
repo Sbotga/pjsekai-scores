@@ -53,7 +53,7 @@
 
 .lyric-text {
     font-size: 12px;
-    font-family: ヒラギノ角ゴシック;
+    font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", Osaka, メイリオ, Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", "ＭＳ ゴシック" , "MS Gothic", "Noto Sans CJK JP", TakaoPGothic, sans-serif;
     fill: #ffffff;
     text-anchor: start;
 }
@@ -104,7 +104,7 @@
 .title {
     font-size: 96px;
     font-weight: 900;
-    font-family: ヒラギノ角ゴシック;
+    font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", Osaka, メイリオ, Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", "ＭＳ ゴシック" , "MS Gothic", "Noto Sans CJK JP", TakaoPGothic, sans-serif;
     fill: #ffffff;
     text-anchor: start;
 }
@@ -112,7 +112,7 @@
 .subtitle {
     font-size: 48px;
     font-weight: 700;
-    font-family: ヒラギノ角ゴシック;
+    font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", Osaka, メイリオ, Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", "ＭＳ ゴシック" , "MS Gothic", "Noto Sans CJK JP", TakaoPGothic, sans-serif;
     fill: #ffffff;
     text-anchor: start;
 }
