@@ -255,7 +255,7 @@ class Drawing:
             ' '.join(filter(lambda x: x, [
                 self.score.meta.difficulty and str(self.score.meta.difficulty).upper(),
                 self.score.meta.playlevel,
-                'Chart by sekai.best powered by pjsekai.moe'
+                'Chart by Sbogta'
             ])),
             insert=(
                 self.meta_size + self.lane_padding * 4,
