@@ -118,7 +118,7 @@
 }
 
 .lane {
-    fill: #d5bdef;
+    fill: #b8b8b8;
 }
 
 .background {
@@ -127,6 +127,5 @@
 }
 
 .meta {
-    fill: #ab7ed3;
-    fill-opacity: 0.0;
+    fill: #000000;
 }
