@@ -122,8 +122,8 @@
 }
 
 .background {
-    fill: #ab7ed3;
-    fill-opacity: 0.0;
+    fill: #000000;
+    fill-opacity: 0.2;
 }
 
 .meta {
