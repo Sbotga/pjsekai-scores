@@ -123,8 +123,10 @@
 
 .background {
     fill: #ab7ed3;
+    fill-opacity: 0.0;
 }
 
 .meta {
     fill: #ab7ed3;
+    fill-opacity: 0.0;
 }
