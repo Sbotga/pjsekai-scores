@@ -37,6 +37,7 @@
     font-family: Avenir;
     fill: #fee300;
     text-anchor: start;
+    letter-spacing: 5px;
 }
 
 .speed-line {
@@ -119,6 +120,7 @@
 
 .lane {
     fill: #b8b8b8;
+    fill-opacity: 0.6;
 }
 
 .background {
