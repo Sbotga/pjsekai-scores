@@ -120,12 +120,12 @@
 
 .lane {
     fill: #b8b8b8;
-    fill-opacity: 0.4;
+    fill-opacity: 0.6;
 }
 
 .background {
     fill: #d3d3d3;
-    fill-opacity: 0.1;
+    fill-opacity: 0.4;
 }
 
 .meta {
