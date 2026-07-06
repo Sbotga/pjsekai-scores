@@ -1,5 +1,6 @@
 import os
 import math
+import pathlib
 
 import svgwrite
 import svgwrite.base
@@ -17,7 +18,9 @@ from .notes import *
 from .score import *
 from .lyric import *
 
-__all__ = ['Drawing', 'DrawingSentence']
+__all__ = ["Drawing", "DrawingSentence", "DEFAULT_NOTE_HOST"]
+
+DEFAULT_NOTE_HOST = (pathlib.Path(__file__).parent / "assets").resolve().as_uri()
 
 
 class Drawing:
@@ -26,8 +29,8 @@ class Drawing:
         self,
         score: Score,
         lyric: Lyric = None,
-        style_sheet: str = '',
-        note_host: str = 'https://asset3.pjsekai.moe/live/note/custom01',
+        style_sheet: str = "",
+        note_host: str = DEFAULT_NOTE_HOST,
         **kwargs,
     ):
 
@@ -38,17 +41,17 @@ class Drawing:
 
         self.note_host = note_host
 
-        ''''widths'''
+        """'widths"""
         self.lane_width = 16
         # self.note_width = 8
         # self.flick_width = 32
 
-        '''heights'''
+        """heights"""
         self.time_height = 360
         self.note_size = 16
         self.flick_height = 24
 
-        '''paddings'''
+        """paddings"""
         self.lane_padding = 40
         self.time_padding = 32
 
@@ -60,11 +63,19 @@ class Drawing:
         self.tick_length = 24
         self.tick_2_length = 8
 
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'css/default.css'), encoding='UTF-8') as f:
-            self.style_sheet = f.read() + '\n' + style_sheet
+        with open(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "css/default.css"),
+            encoding="UTF-8",
+        ) as f:
+            self.style_sheet = (
+                f.read().replace("__ASSETS__", DEFAULT_NOTE_HOST) + "\n" + style_sheet
+            )
 
     def __getitem__(self, bar: slice) -> svgwrite.Drawing:
-        bar = slice(bar.start or 0, bar.stop or int(self.score.notes[-1].bar + 1) if self.score.notes else 0)
+        bar = slice(
+            bar.start or 0,
+            bar.stop or int(self.score.notes[-1].bar + 1) if self.score.notes else 0,
+        )
         sentence = DrawingSentence(self, bar)
         return sentence.svg()
 
@@ -84,16 +95,16 @@ class Drawing:
             e = self.score.get_event(i)
 
             if bar != i and (
-                e.section != event.section or
-                e.sentence_length != event.sentence_length or
-                i == bar + event.sentence_length or
-                i == n_bars
+                e.section != event.section
+                or e.sentence_length != event.sentence_length
+                or i == bar + event.sentence_length
+                or i == n_bars
             ):
-                d = self[bar: i]
+                d = self[bar:i]
 
-                width += d['width']
-                if height < d['height']:
-                    height = d['height']
+                width += d["width"]
+                if height < d["height"]:
+                    height = d["height"]
 
                 drawings.append(d)
 
@@ -101,23 +112,29 @@ class Drawing:
 
             event |= e
 
-        drawing = svgwrite.Drawing(size=(
-            width + self.lane_padding * 2,
-            height + self.time_padding * 2 + self.meta_size + self.time_padding * 2,
-        ))
+        drawing = svgwrite.Drawing(
+            size=(
+                width + self.lane_padding * 2,
+                height + self.time_padding * 2 + self.meta_size + self.time_padding * 2,
+            )
+        )
 
         drawing.defs.add(drawing.style(self.style_sheet))
 
         decoration_gradient = svgwrite.gradients.LinearGradient(
-            start=(0, 1), end=(0, 0), id='decoration-gradient', debug=False)
-        decoration_gradient.add_stop_color(offset=0, color='var(--color-start)')
-        decoration_gradient.add_stop_color(offset=1, color='var(--color-stop)')
+            start=(0, 1), end=(0, 0), id="decoration-gradient", debug=False
+        )
+        decoration_gradient.add_stop_color(offset=0, color="var(--color-start)")
+        decoration_gradient.add_stop_color(offset=1, color="var(--color-stop)")
         drawing.defs.add(decoration_gradient)
 
         decoration_critical_gradient = svgwrite.gradients.LinearGradient(
-            start=(0, 1), end=(0, 0), id='decoration-critical-gradient', debug=False)
-        decoration_critical_gradient.add_stop_color(offset=0, color='var(--color-start)')
-        decoration_critical_gradient.add_stop_color(offset=1, color='var(--color-stop)')
+            start=(0, 1), end=(0, 0), id="decoration-critical-gradient", debug=False
+        )
+        decoration_critical_gradient.add_stop_color(
+            offset=0, color="var(--color-start)"
+        )
+        decoration_critical_gradient.add_stop_color(offset=1, color="var(--color-stop)")
         drawing.defs.add(decoration_critical_gradient)
 
         # tap_left = svgwrite.masking.ClipPath(id="tap-left")
@@ -127,25 +144,30 @@ class Drawing:
         note_m_ratio = 1200
         for note_number in range(0, 7):
             symbol = svgwrite.container.Symbol(
-                id=f'notes-{note_number}',
-                viewBox='0 0 112 56',
+                id=f"notes-{note_number}",
+                viewBox="0 0 112 56",
             )
-            symbol.add(svgwrite.image.Image(
-                href=f'{self.note_host}/notes_{note_number}.png',
-                insert=(-3, -3),
-                size=(118, 62),
-            ))
+            symbol.add(
+                svgwrite.image.Image(
+                    href=f"{self.note_host}/notes_{note_number}.png",
+                    insert=(-3, -3),
+                    size=(118, 62),
+                )
+            )
             drawing.defs.add(symbol)
 
             symbol = svgwrite.container.Symbol(
-                id=f'notes-{note_number}-middle',
-                viewBox=f'0 0 {112 * note_m_ratio} {56}',
+                id=f"notes-{note_number}-middle",
+                viewBox=f"0 0 {112 * note_m_ratio} {56}",
             )
-            symbol.add(svgwrite.image.Image(
-                href=f'{self.note_host}/notes_{note_number}.png',
-                insert=(-(3 + 28) * note_m_ratio, -3), size=(118 * note_m_ratio, 62),
-                preserveAspectRatio='none',
-            ))
+            symbol.add(
+                svgwrite.image.Image(
+                    href=f"{self.note_host}/notes_{note_number}.png",
+                    insert=(-(3 + 28) * note_m_ratio, -3),
+                    size=(118 * note_m_ratio, 62),
+                    preserveAspectRatio="none",
+                )
+            )
             drawing.defs.add(symbol)
 
             for i in range(1, self.n_lanes + 1):
@@ -155,116 +177,170 @@ class Drawing:
 
                 note_l_width = note_r_width = note_height / 56 * 32
                 note_m_width = note_inner_width - (note_l_width + note_r_width) / 2 - 2
-                note_padding_x = (note_width - note_l_width - note_m_width - note_r_width) / 2
+                note_padding_x = (
+                    note_width - note_l_width - note_m_width - note_r_width
+                ) / 2
 
                 symbol = svgwrite.container.Symbol(
-                    id=f'notes-{note_number}-{i}', viewBox=f'0 0 {note_width} {note_height}')
+                    id=f"notes-{note_number}-{i}",
+                    viewBox=f"0 0 {note_width} {note_height}",
+                )
 
-                left_clip_path = svgwrite.masking.ClipPath(id=f'notes-{note_number}-{i}-left')
-                left_clip_path.add(svgwrite.shapes.Rect(
-                    insert=(0, 0),
-                    size=(note_l_width, note_height),
-                ))
+                left_clip_path = svgwrite.masking.ClipPath(
+                    id=f"notes-{note_number}-{i}-left"
+                )
+                left_clip_path.add(
+                    svgwrite.shapes.Rect(
+                        insert=(0, 0),
+                        size=(note_l_width, note_height),
+                    )
+                )
                 symbol.add(left_clip_path)
 
-                middle_clip_path = svgwrite.masking.ClipPath(id=f'notes-{note_number}-{i}-middle')
-                middle_clip_path.add(svgwrite.shapes.Rect(
-                    insert=(0, 0),
-                    size=(note_m_width, note_height),
-                ))
+                middle_clip_path = svgwrite.masking.ClipPath(
+                    id=f"notes-{note_number}-{i}-middle"
+                )
+                middle_clip_path.add(
+                    svgwrite.shapes.Rect(
+                        insert=(0, 0),
+                        size=(note_m_width, note_height),
+                    )
+                )
                 symbol.add(middle_clip_path)
 
-                right_clip_path = svgwrite.masking.ClipPath(id=f'notes-{note_number}-{i}-right')
-                right_clip_path.add(svgwrite.shapes.Rect(
-                    insert=(note_height / 56 * 80, 0),
-                    size=(note_r_width, note_height),
-                ))
+                right_clip_path = svgwrite.masking.ClipPath(
+                    id=f"notes-{note_number}-{i}-right"
+                )
+                right_clip_path.add(
+                    svgwrite.shapes.Rect(
+                        insert=(note_height / 56 * 80, 0),
+                        size=(note_r_width, note_height),
+                    )
+                )
                 symbol.add(right_clip_path)
 
-                symbol.add(svgwrite.container.Use(
-                    href=f'#notes-{note_number}',
-                    insert=(note_padding_x, 0),
-                    size=(note_height * 2, note_height),
-                    clip_path=f'url(#notes-{note_number}-{i}-left)',
-                ))
-                symbol.add(svgwrite.container.Use(
-                    href=f'#notes-{note_number}-middle',
-                    insert=(note_padding_x + note_l_width, 0),
-                    size=(note_height * note_m_ratio * 2, note_height),
-                    clip_path=f'url(#notes-{note_number}-{i}-middle)',
-                ))
-                symbol.add(svgwrite.container.Use(
-                    href=f'#notes-{note_number}',
-                    insert=(note_padding_x + note_l_width + note_m_width + note_r_width - note_height * 2, 0),
-                    size=(note_height * 2, note_height),
-                    clip_path=f'url(#notes-{note_number}-{i}-right)',
-                ))
+                symbol.add(
+                    svgwrite.container.Use(
+                        href=f"#notes-{note_number}",
+                        insert=(note_padding_x, 0),
+                        size=(note_height * 2, note_height),
+                        clip_path=f"url(#notes-{note_number}-{i}-left)",
+                    )
+                )
+                symbol.add(
+                    svgwrite.container.Use(
+                        href=f"#notes-{note_number}-middle",
+                        insert=(note_padding_x + note_l_width, 0),
+                        size=(note_height * note_m_ratio * 2, note_height),
+                        clip_path=f"url(#notes-{note_number}-{i}-middle)",
+                    )
+                )
+                symbol.add(
+                    svgwrite.container.Use(
+                        href=f"#notes-{note_number}",
+                        insert=(
+                            note_padding_x
+                            + note_l_width
+                            + note_m_width
+                            + note_r_width
+                            - note_height * 2,
+                            0,
+                        ),
+                        size=(note_height * 2, note_height),
+                        clip_path=f"url(#notes-{note_number}-{i}-right)",
+                    )
+                )
 
                 drawing.defs.add(symbol)
 
-        drawing.add(drawing.rect(
-            insert=(0, 0),
-            size=(
-                width + self.lane_padding * 2,
-                height + self.time_padding * 2,
-            ),
-            class_='background',
-        ))
+        drawing.add(
+            drawing.rect(
+                insert=(0, 0),
+                size=(
+                    width + self.lane_padding * 2,
+                    height + self.time_padding * 2,
+                ),
+                class_="background",
+            )
+        )
 
-        drawing.add(drawing.rect(
-            insert=(0, height + self.time_padding * 2),
-            size=(
-                width + self.lane_padding * 2,
-                self.meta_size + self.time_padding * 2,
-            ),
-            class_='meta',
-        ))
+        drawing.add(
+            drawing.rect(
+                insert=(0, height + self.time_padding * 2),
+                size=(
+                    width + self.lane_padding * 2,
+                    self.meta_size + self.time_padding * 2,
+                ),
+                class_="meta",
+            )
+        )
 
-        drawing.add(drawing.line(
-            start=(
-                0,
-                height + self.time_padding * 2,
-            ),
-            end=(
-                width + self.lane_padding * 2,
-                height + self.time_padding * 2,
-            ),
-            class_='meta-line',
-        ))
+        drawing.add(
+            drawing.line(
+                start=(
+                    0,
+                    height + self.time_padding * 2,
+                ),
+                end=(
+                    width + self.lane_padding * 2,
+                    height + self.time_padding * 2,
+                ),
+                class_="meta-line",
+            )
+        )
 
-        drawing.add(svgwrite.image.Image(
-            href=self.score.meta.jacket or 'https://storage.sekai.best/sekai-jp-assets/thumbnail/chara_rip/res009_no021_normal.png',
-            insert=(
-                self.lane_padding * 2,
-                height + self.time_padding * 3,
-            ),
-            size=(self.meta_size, self.meta_size),
-        ))
+        drawing.add(
+            svgwrite.image.Image(
+                href=self.score.meta.jacket
+                or f"{DEFAULT_NOTE_HOST}/jacket_placeholder.png",
+                insert=(
+                    self.lane_padding * 2,
+                    height + self.time_padding * 3,
+                ),
+                size=(self.meta_size, self.meta_size),
+            )
+        )
 
-        drawing.add(svgwrite.text.Text(
-            ' - '.join(filter(lambda x: x, [
-                self.score.meta.title,
-                self.score.meta.artist,
-            ])) or 'Untitled',
-            insert=(
-                self.meta_size + self.lane_padding * 4,
-                self.meta_size + height + self.time_padding * 3 - 16,
-            ),
-            class_='title',
-        ))
+        drawing.add(
+            svgwrite.text.Text(
+                " - ".join(
+                    filter(
+                        lambda x: x,
+                        [
+                            self.score.meta.title,
+                            self.score.meta.artist,
+                        ],
+                    )
+                )
+                or "Untitled",
+                insert=(
+                    self.meta_size + self.lane_padding * 4,
+                    self.meta_size + height + self.time_padding * 3 - 16,
+                ),
+                class_="title",
+            )
+        )
 
-        drawing.add(svgwrite.text.Text(
-            ' '.join(filter(lambda x: x, [
-                self.score.meta.difficulty and str(self.score.meta.difficulty).upper(),
-                self.score.meta.playlevel,
-                'Chart drawn by sbuga.com'
-            ])),
-            insert=(
-                self.meta_size + self.lane_padding * 4,
-                self.meta_size * 1/3 + height + self.time_padding * 3 - 8,
-            ),
-            class_='subtitle',
-        ))
+        drawing.add(
+            svgwrite.text.Text(
+                " ".join(
+                    filter(
+                        lambda x: x,
+                        [
+                            self.score.meta.difficulty
+                            and str(self.score.meta.difficulty).upper(),
+                            self.score.meta.playlevel,
+                            "Chart drawn by sbuga.com",
+                        ],
+                    )
+                ),
+                insert=(
+                    self.meta_size + self.lane_padding * 4,
+                    self.meta_size * 1 / 3 + height + self.time_padding * 3 - 8,
+                ),
+                class_="subtitle",
+            )
+        )
 
         # scale = self.scale()
         # scale['x'] = width - self.meta_size
@@ -273,9 +349,9 @@ class Drawing:
 
         width = 0
         for d in drawings:
-            d['x'] = width + self.lane_padding
-            d['y'] = height - d['height'] + self.time_padding
-            width += d['width']
+            d["x"] = width + self.lane_padding
+            d["y"] = height - d["height"] + self.time_padding
+            width += d["width"]
             drawing.add(d)
 
         return drawing
@@ -300,50 +376,75 @@ class DrawingSentence(Drawing):
         # left: from l[0], controlled by l[1] and l[2], to l[3]
         # right: from r[0], controlled by r[1] and r[2], to r[3]
 
-        y_0 = self.time_height * self.score.get_time_delta(slide_0.bar, self.bar.stop) + self.time_padding
-        y_1 = self.time_height * self.score.get_time_delta(slide_1.bar, self.bar.stop) + self.time_padding
+        y_0 = (
+            self.time_height * self.score.get_time_delta(slide_0.bar, self.bar.stop)
+            + self.time_padding
+        )
+        y_1 = (
+            self.time_height * self.score.get_time_delta(slide_1.bar, self.bar.stop)
+            + self.time_padding
+        )
 
         ease_in = slide_0.directional and slide_0.directional.type in (
-            DirectionalType.DOWN, )
+            DirectionalType.DOWN,
+        )
         ease_out = slide_0.directional and slide_0.directional.type in (
-            DirectionalType.LOWER_LEFT, DirectionalType.LOWER_RIGHT)
+            DirectionalType.LOWER_LEFT,
+            DirectionalType.LOWER_RIGHT,
+        )
 
         slide_path_padding = self.slide_path_padding if not slide_0.decoration else 0
 
         return (
             (
-                self.lane_width * (slide_0.lane - 2) + self.lane_padding - slide_path_padding,
+                self.lane_width * (slide_0.lane - 2)
+                + self.lane_padding
+                - slide_path_padding,
                 y_0,
             ),
             (
-                self.lane_width * (slide_0.lane - 2) + self.lane_padding - slide_path_padding,
+                self.lane_width * (slide_0.lane - 2)
+                + self.lane_padding
+                - slide_path_padding,
                 (y_0 + y_1) / 2 if ease_in else y_0,
             ),
             (
-                self.lane_width * (slide_1.lane - 2) + self.lane_padding - slide_path_padding,
+                self.lane_width * (slide_1.lane - 2)
+                + self.lane_padding
+                - slide_path_padding,
                 (y_0 + y_1) / 2 if ease_out else y_1,
             ),
             (
-                self.lane_width * (slide_1.lane - 2) + self.lane_padding - slide_path_padding,
+                self.lane_width * (slide_1.lane - 2)
+                + self.lane_padding
+                - slide_path_padding,
                 y_1,
             ),
         ), (
             (
-                self.lane_width * (slide_0.lane - 2 + slide_0.width) + self.lane_padding + slide_path_padding,
+                self.lane_width * (slide_0.lane - 2 + slide_0.width)
+                + self.lane_padding
+                + slide_path_padding,
                 y_0,
             ),
             (
-                self.lane_width * (slide_0.lane - 2 + slide_0.width) + self.lane_padding + slide_path_padding,
+                self.lane_width * (slide_0.lane - 2 + slide_0.width)
+                + self.lane_padding
+                + slide_path_padding,
                 (y_0 + y_1) / 2 if ease_in else y_0,
             ),
             (
-                self.lane_width * (slide_1.lane - 2 + slide_1.width) + self.lane_padding + slide_path_padding,
+                self.lane_width * (slide_1.lane - 2 + slide_1.width)
+                + self.lane_padding
+                + slide_path_padding,
                 (y_0 + y_1) / 2 if ease_out else y_1,
             ),
             (
-                self.lane_width * (slide_1.lane - 2 + slide_1.width) + self.lane_padding + slide_path_padding,
+                self.lane_width * (slide_1.lane - 2 + slide_1.width)
+                + self.lane_padding
+                + slide_path_padding,
                 y_1,
-            )
+            ),
         )
 
     def add_slide_path(self, slide: Slide):
@@ -374,26 +475,26 @@ class DrawingSentence(Drawing):
         d = [
             [
                 [
-                    ('M', list(map(round, [*l[0]]))) if i == 0 else [],
-                    ('C', list(map(round, [*l[1], *l[2], *l[3]])))
+                    ("M", list(map(round, [*l[0]]))) if i == 0 else [],
+                    ("C", list(map(round, [*l[1], *l[2], *l[3]]))),
                 ]
                 for i, l in enumerate(lefts)
             ],
             [
                 [
-                    ('L', list(map(round, [*r[3]]))) if i == 0 else [],
-                    ('C', list(map(round, [*r[2], *r[1], *r[0]])))
+                    ("L", list(map(round, [*r[3]]))) if i == 0 else [],
+                    ("C", list(map(round, [*r[2], *r[1], *r[0]]))),
                 ]
                 for i, r in enumerate(reversed(rights))
             ],
-            ('z'),
+            ("z"),
         ]
 
         class_name: str
         if slide.decoration:
-            class_name = 'decoration-critical' if slide.is_critical() else 'decoration'
+            class_name = "decoration-critical" if slide.is_critical() else "decoration"
         else:
-            class_name = 'slide-critical' if slide.is_critical() else 'slide'
+            class_name = "slide-critical" if slide.is_critical() else "slide"
 
         self.slide_paths.append(
             svgwrite.path.Path(
@@ -403,29 +504,42 @@ class DrawingSentence(Drawing):
         )
 
     def add_friction_among_image(self, note: Note):
-        y = self.time_height * self.score.get_time_delta(note.bar, self.bar.stop) + self.time_padding
+        y = (
+            self.time_height * self.score.get_time_delta(note.bar, self.bar.stop)
+            + self.time_padding
+        )
         x = self.lane_width * (note.lane + note.width / 2 - 2) + self.lane_padding
 
         w = self.lane_width * 0.75
         h = self.lane_width * 0.75
 
-        self.among_images.append(svgwrite.image.Image(
-            href='%s/notes_friction_among%s.png' % (
-                self.note_host,
-                '_crtcl' if note.is_critical() else '_flick' if isinstance(note, Directional) else '_long',
-            ),
-            insert=(
-                round(x - w / 2),
-                round(y - h / 2),
-            ),
-            size=(
-                round(w),
-                round(h),
-            ),
-        ))
+        self.among_images.append(
+            svgwrite.image.Image(
+                href="%s/notes_friction_among%s.png"
+                % (
+                    self.note_host,
+                    (
+                        "_crtcl"
+                        if note.is_critical()
+                        else "_flick" if isinstance(note, Directional) else "_long"
+                    ),
+                ),
+                insert=(
+                    round(x - w / 2),
+                    round(y - h / 2),
+                ),
+                size=(
+                    round(w),
+                    round(h),
+                ),
+            )
+        )
 
     def add_among_image(self, note: Note, l, r):
-        y = self.time_height * self.score.get_time_delta(note.bar, self.bar.stop) + self.time_padding
+        y = (
+            self.time_height * self.score.get_time_delta(note.bar, self.bar.stop)
+            + self.time_padding
+        )
 
         x_l = _binary_solution_for_x(y, l)
         x_r = _binary_solution_for_x(y, r)
@@ -434,23 +548,29 @@ class DrawingSentence(Drawing):
         w = self.lane_width
         h = self.lane_width
 
-        self.among_images.append(svgwrite.image.Image(
-            href='%s/notes_long_among%s.png' % (
-                self.note_host,
-                '_crtcl' if note.is_critical() else '',
-            ),
-            insert=(
-                round(x - w / 2),
-                round(y - h / 2),
-            ),
-            size=(
-                round(w),
-                round(h),
-            ),
-        ))
+        self.among_images.append(
+            svgwrite.image.Image(
+                href="%s/notes_long_among%s.png"
+                % (
+                    self.note_host,
+                    "_crtcl" if note.is_critical() else "",
+                ),
+                insert=(
+                    round(x - w / 2),
+                    round(y - h / 2),
+                ),
+                size=(
+                    round(w),
+                    round(h),
+                ),
+            )
+        )
 
     def add_note_images(self, note: Note):
-        y = self.time_height * self.score.get_time_delta(note.bar, self.bar.stop) + self.time_padding
+        y = (
+            self.time_height * self.score.get_time_delta(note.bar, self.bar.stop)
+            + self.time_padding
+        )
         x = self.lane_width * (note.lane - 2.5) + self.lane_padding
 
         w = self.lane_width * (note.width + 1)
@@ -479,15 +599,20 @@ class DrawingSentence(Drawing):
                 else:
                     note_number = 1
 
-        self.note_images.append(svgwrite.container.Use(
-            href=f'#notes-{note_number}-{note.width}',
-            insert=(round(x), round(y - h / 2)),
-            size=(round(w), round(h)),
-        ))
+        self.note_images.append(
+            svgwrite.container.Use(
+                href=f"#notes-{note_number}-{note.width}",
+                insert=(round(x), round(y - h / 2)),
+                size=(round(w), round(h)),
+            )
+        )
 
     def add_flick_image(self, note: Note):
-        src = '%s/notes_flick_arrow%s_0%s%s.png'
-        y = self.time_height * self.score.get_time_delta(note.bar, self.bar.stop) + self.time_padding
+        src = "%s/notes_flick_arrow%s_0%s%s.png"
+        y = (
+            self.time_height * self.score.get_time_delta(note.bar, self.bar.stop)
+            + self.time_padding
+        )
 
         if note.is_none():
             return
@@ -518,54 +643,74 @@ class DrawingSentence(Drawing):
         w = h0 * 1.5 * ((width + 0.5) / 3) ** 0.75
         x = self.lane_width * (note.lane - 2 + note.width / 2) + self.lane_padding
         bias = (
-            - self.note_size / 4 if type == DirectionalType.UPPER_LEFT else
-            self.note_size / 4 if type == DirectionalType.UPPER_RIGHT else
-            0
+            -self.note_size / 4
+            if type == DirectionalType.UPPER_LEFT
+            else self.note_size / 4 if type == DirectionalType.UPPER_RIGHT else 0
         )
 
-        self.flick_images.append(svgwrite.image.Image(
-            src % (
-                self.note_host,
-                '_crtcl' if note.is_critical() else '',
-                width,
-                '_diagonal' if type in (DirectionalType.UPPER_LEFT, DirectionalType.UPPER_RIGHT) else ''
-            ),
-            size=(
-                round(w),
-                round(h),
-            ),
-            insert=(
-                round(x - w / 2 + bias),
-                round(y + self.note_size / 4 - h),
-            ),
-            transform_origin=f'{round(x + bias)} 0' if type == DirectionalType.UPPER_RIGHT else None,
-            transform='scale(-1, 1)' if type == DirectionalType.UPPER_RIGHT else None,
-            debug=False,
-        ))
+        self.flick_images.append(
+            svgwrite.image.Image(
+                src
+                % (
+                    self.note_host,
+                    "_crtcl" if note.is_critical() else "",
+                    width,
+                    (
+                        "_diagonal"
+                        if type
+                        in (DirectionalType.UPPER_LEFT, DirectionalType.UPPER_RIGHT)
+                        else ""
+                    ),
+                ),
+                size=(
+                    round(w),
+                    round(h),
+                ),
+                insert=(
+                    round(x - w / 2 + bias),
+                    round(y + self.note_size / 4 - h),
+                ),
+                transform_origin=(
+                    f"{round(x + bias)} 0"
+                    if type == DirectionalType.UPPER_RIGHT
+                    else None
+                ),
+                transform=(
+                    "scale(-1, 1)" if type == DirectionalType.UPPER_RIGHT else None
+                ),
+                debug=False,
+            )
+        )
 
     def add_tick_text(self, note: Note, next: Note | None = None):
-        y = self.time_height * self.score.get_time_delta(note.bar, self.bar.stop) + self.time_padding
+        y = (
+            self.time_height * self.score.get_time_delta(note.bar, self.bar.stop)
+            + self.time_padding
+        )
 
         if next is None:
-            self.tick_texts.append(svgwrite.shapes.Line(
-                start=(
-                    round(self.lane_padding - self.tick_2_length),
-                    round(y),
-                ),
-                end=(
-                    round(self.lane_padding),
-                    round(y),
-                ),
-                class_='tick-line',
-            ))
+            self.tick_texts.append(
+                svgwrite.shapes.Line(
+                    start=(
+                        round(self.lane_padding - self.tick_2_length),
+                        round(y),
+                    ),
+                    end=(
+                        round(self.lane_padding),
+                        round(y),
+                    ),
+                    class_="tick-line",
+                )
+            )
             return
 
         if (
-            next is None or
-            next is note or
-            next.bar == note.bar or
-            next.bar - note.bar > 1 or
-            next.bar - note.bar > 0.5 and int(next.bar) != int(note.bar)
+            next is None
+            or next is note
+            or next.bar == note.bar
+            or next.bar - note.bar > 1
+            or next.bar - note.bar > 0.5
+            and int(next.bar) != int(note.bar)
         ):
             interval = math.floor(note.bar + 1) - note.bar
         else:
@@ -577,28 +722,35 @@ class DrawingSentence(Drawing):
         if interval == 0:
             return
 
-        text = '%g/%g' % (interval.numerator, interval.denominator) if interval.numerator != 1 else \
-            '/%g' % (interval.denominator,)
+        text = (
+            "%g/%g" % (interval.numerator, interval.denominator)
+            if interval.numerator != 1
+            else "/%g" % (interval.denominator,)
+        )
 
-        self.tick_texts.append(svgwrite.shapes.Line(
-            start=(
-                round(self.lane_padding - self.tick_length),
-                round(y),
-            ),
-            end=(
-                round(self.lane_padding),
-                round(y),
-            ),
-            class_='tick-line',
-        ))
-        self.tick_texts.append(svgwrite.text.Text(
-            text,
-            insert=(
-                round(self.lane_padding - 4),
-                round(y - 2),
-            ),
-            class_='tick-text',
-        ))
+        self.tick_texts.append(
+            svgwrite.shapes.Line(
+                start=(
+                    round(self.lane_padding - self.tick_length),
+                    round(y),
+                ),
+                end=(
+                    round(self.lane_padding),
+                    round(y),
+                ),
+                class_="tick-line",
+            )
+        )
+        self.tick_texts.append(
+            svgwrite.text.Text(
+                text,
+                insert=(
+                    round(self.lane_padding - 4),
+                    round(y - 2),
+                ),
+                class_="tick-text",
+            )
+        )
 
     def svg(self):
         for i, note in enumerate(self.score.notes):
@@ -678,7 +830,9 @@ class DrawingSentence(Drawing):
                     if note.directional:
                         self.add_flick_image(note)
 
-        height = self.time_height * self.score.get_time_delta(self.bar.start, self.bar.stop)
+        height = self.time_height * self.score.get_time_delta(
+            self.bar.start, self.bar.stop
+        )
 
         drawing = svgwrite.Drawing(
             size=(
@@ -687,90 +841,132 @@ class DrawingSentence(Drawing):
             ),
         )
 
-        drawing.add(drawing.rect(
-            insert=(0, 0),
-            size=(
-                round(self.lane_width * self.n_lanes + self.lane_padding * 2),
-                round(height + self.time_padding * 2),
-            ),
-            class_='background',
-        ))
-
-        drawing.add(drawing.rect(
-            insert=(self.lane_padding, 0),
-            size=(
-                round(self.lane_width * self.n_lanes),
-                round(height + self.time_padding * 2),
-            ),
-            class_='lane',
-        ))
-
-        for lane in range(0, self.n_lanes + 1, 2):
-            drawing.add(drawing.line(
-                start=(
-                    round(self.lane_width * lane + self.lane_padding),
-                    round(0),
-                ),
-                end=(
-                    round(self.lane_width * lane + self.lane_padding),
+        drawing.add(
+            drawing.rect(
+                insert=(0, 0),
+                size=(
+                    round(self.lane_width * self.n_lanes + self.lane_padding * 2),
                     round(height + self.time_padding * 2),
                 ),
-                class_='lane-line',
-            ))
+                class_="background",
+            )
+        )
+
+        drawing.add(
+            drawing.rect(
+                insert=(self.lane_padding, 0),
+                size=(
+                    round(self.lane_width * self.n_lanes),
+                    round(height + self.time_padding * 2),
+                ),
+                class_="lane",
+            )
+        )
+
+        for lane in range(0, self.n_lanes + 1, 2):
+            drawing.add(
+                drawing.line(
+                    start=(
+                        round(self.lane_width * lane + self.lane_padding),
+                        round(0),
+                    ),
+                    end=(
+                        round(self.lane_width * lane + self.lane_padding),
+                        round(height + self.time_padding * 2),
+                    ),
+                    class_="lane-line",
+                )
+            )
 
         for bar in range(self.bar.start, self.bar.stop + 1):
-            drawing.add(drawing.line(
-                start=(
-                    round(self.lane_width * 0 + self.lane_padding),
-                    round(self.time_height * self.score.get_time_delta(bar, self.bar.stop) + self.time_padding),
-                ),
-                end=(
-                    round(self.lane_width * self.n_lanes + self.lane_padding),
-                    round(self.time_height * self.score.get_time_delta(bar, self.bar.stop) + self.time_padding),
-                ),
-                class_='bar-line',
-            ))
+            drawing.add(
+                drawing.line(
+                    start=(
+                        round(self.lane_width * 0 + self.lane_padding),
+                        round(
+                            self.time_height
+                            * self.score.get_time_delta(bar, self.bar.stop)
+                            + self.time_padding
+                        ),
+                    ),
+                    end=(
+                        round(self.lane_width * self.n_lanes + self.lane_padding),
+                        round(
+                            self.time_height
+                            * self.score.get_time_delta(bar, self.bar.stop)
+                            + self.time_padding
+                        ),
+                    ),
+                    class_="bar-line",
+                )
+            )
 
             event = self.score.get_event(bar)
             for i in range(1, math.ceil(event.bar_length)):
-                t = self.score.get_time_delta(bar + Fraction(i, event.bar_length), self.bar.stop)
+                t = self.score.get_time_delta(
+                    bar + Fraction(i, event.bar_length), self.bar.stop
+                )
                 y = self.time_height * t + self.time_padding
 
-                drawing.add(drawing.line(
-                    start=(
-                        round(self.lane_width * 0 + self.lane_padding),
-                        round(y),
-                    ),
-                    end=(
-                        round(self.lane_width * self.n_lanes + self.lane_padding),
-                        round(y),
-                    ),
-                    class_='beat-line',
-                ))
+                drawing.add(
+                    drawing.line(
+                        start=(
+                            round(self.lane_width * 0 + self.lane_padding),
+                            round(y),
+                        ),
+                        end=(
+                            round(self.lane_width * self.n_lanes + self.lane_padding),
+                            round(y),
+                        ),
+                        class_="beat-line",
+                    )
+                )
 
         print_events: list[Event] = []
-        for event in sorted([Event(bar=i) for i in range(self.bar.start, self.bar.stop + 1)] + self.score.events):
+        for event in sorted(
+            [Event(bar=i) for i in range(self.bar.start, self.bar.stop + 1)]
+            + self.score.events
+        ):
             if event.speed:
-                drawing.add(drawing.line(
-                    start=(
-                        round(self.lane_width * 0 + self.lane_padding),
-                        round(self.time_height * self.score.get_time_delta(event.bar, self.bar.stop) + self.time_padding),
-                    ),
-                    end=(
-                        round(self.lane_width * self.n_lanes + self.lane_padding),
-                        round(self.time_height * self.score.get_time_delta(event.bar, self.bar.stop) + self.time_padding),
-                    ),
-                    class_='speed-line',
-                ))
+                drawing.add(
+                    drawing.line(
+                        start=(
+                            round(self.lane_width * 0 + self.lane_padding),
+                            round(
+                                self.time_height
+                                * self.score.get_time_delta(event.bar, self.bar.stop)
+                                + self.time_padding
+                            ),
+                        ),
+                        end=(
+                            round(self.lane_width * self.n_lanes + self.lane_padding),
+                            round(
+                                self.time_height
+                                * self.score.get_time_delta(event.bar, self.bar.stop)
+                                + self.time_padding
+                            ),
+                        ),
+                        class_="speed-line",
+                    )
+                )
 
-                drawing.add(drawing.text(
-                    '%gx' % event.speed,
-                    insert=(
-                        round(self.lane_width * self.n_lanes + self.lane_padding - 2),
-                        round(self.time_height * self.score.get_time_delta(event.bar, self.bar.stop) + self.time_padding - 2),
-                    ),
-                    class_='speed-text',
-                ))
+                drawing.add(
+                    drawing.text(
+                        "%gx" % event.speed,
+                        insert=(
+                            round(
+                                self.lane_width * self.n_lanes + self.lane_padding - 2
+                            ),
+                            round(
+                                self.time_height
+                                * self.score.get_time_delta(event.bar, self.bar.stop)
+                                + self.time_padding
+                                - 2
+                            ),
+                        ),
+                        class_="speed-text",
+                    )
+                )
 
                 continue
 
@@ -779,70 +975,110 @@ class DrawingSentence(Drawing):
             else:
                 print_events.append(event)
 
-            special = event.bpm or event.bar_length or event.speed or event.section or event.text
+            special = (
+                event.bpm
+                or event.bar_length
+                or event.speed
+                or event.section
+                or event.text
+            )
 
-            drawing.add(drawing.line(
-                start=(
-                    round(self.lane_width * 0),
-                    round(self.time_height * self.score.get_time_delta(event.bar, self.bar.stop) + self.time_padding),
-                ),
-                end=(
-                    round(self.lane_width * 0 + self.lane_padding),
-                    round(self.time_height * self.score.get_time_delta(event.bar, self.bar.stop) + self.time_padding),
-                ),
-                class_='bar-count-flag' if not special else 'event-flag',
-            ))
+            drawing.add(
+                drawing.line(
+                    start=(
+                        round(self.lane_width * 0),
+                        round(
+                            self.time_height
+                            * self.score.get_time_delta(event.bar, self.bar.stop)
+                            + self.time_padding
+                        ),
+                    ),
+                    end=(
+                        round(self.lane_width * 0 + self.lane_padding),
+                        round(
+                            self.time_height
+                            * self.score.get_time_delta(event.bar, self.bar.stop)
+                            + self.time_padding
+                        ),
+                    ),
+                    class_="bar-count-flag" if not special else "event-flag",
+                )
+            )
 
         for event in print_events:
             if not self.bar.start - 1 <= event.bar < self.bar.stop + 1:
                 continue
 
-            text = ', '.join(filter(lambda x: x, [
-                '#%g' % event.bar if int(event.bar) == event.bar else None,
-                '%g BPM' % event.bpm if event.bpm else None,
-                '%g/4' % event.bar_length if event.bar_length else None,
-                event.section,
-                event.text,
-            ]))
+            text = ", ".join(
+                filter(
+                    lambda x: x,
+                    [
+                        "#%g" % event.bar if int(event.bar) == event.bar else None,
+                        "%g BPM" % event.bpm if event.bpm else None,
+                        "%g/4" % event.bar_length if event.bar_length else None,
+                        event.section,
+                        event.text,
+                    ],
+                )
+            )
 
-            special = event.bpm or event.bar_length or event.speed or event.section or event.text
+            special = (
+                event.bpm
+                or event.bar_length
+                or event.speed
+                or event.section
+                or event.text
+            )
 
             if not text:
                 continue
 
-            drawing.add(drawing.text(
-                text,
-                insert=(
-                    round(self.lane_padding + 8),
-                    round(self.time_height * self.score.get_time_delta(event.bar,
-                          self.bar.stop) + self.time_padding - self.lane_width * 1.5),
-                ),
-                transform=f'''rotate(-90, {
+            drawing.add(
+                drawing.text(
+                    text,
+                    insert=(
+                        round(self.lane_padding + 8),
+                        round(
+                            self.time_height
+                            * self.score.get_time_delta(event.bar, self.bar.stop)
+                            + self.time_padding
+                            - self.lane_width * 1.5
+                        ),
+                    ),
+                    transform=f"""rotate(-90, {
                     round(self.lane_padding)
                 }, {
                     round(self.time_height * self.score.get_time_delta(event.bar, self.bar.stop) + self.time_padding)
-                })''',
-                class_='bar-count-text' if not special else 'event-text',
-            ))
+                })""",
+                    class_="bar-count-text" if not special else "event-text",
+                )
+            )
 
         if self.lyric:
             for word in self.lyric.words:
                 if not self.bar.start - 1 <= word.bar < self.bar.stop + 1:
                     continue
 
-                drawing.add(drawing.text(
-                    word.text,
-                    insert=(
-                        round(self.lane_width * self.n_lanes + self.lane_padding),
-                        round(self.time_height * self.score.get_time_delta(word.bar, self.bar.stop) + self.time_padding + 16),
-                    ),
-                    transform=f'''rotate(-90, {
+                drawing.add(
+                    drawing.text(
+                        word.text,
+                        insert=(
+                            round(self.lane_width * self.n_lanes + self.lane_padding),
+                            round(
+                                self.time_height
+                                * self.score.get_time_delta(word.bar, self.bar.stop)
+                                + self.time_padding
+                                + 16
+                            ),
+                        ),
+                        transform=f"""rotate(-90, {
                         round(self.lane_width * self.n_lanes + self.lane_padding)
                     }, {
                         round(self.time_height * self.score.get_time_delta(word.bar, self.bar.stop) + self.time_padding)
-                    })''',
-                    class_='lyric-text',
-                ))
+                    })""",
+                        class_="lyric-text",
+                    )
+                )
 
         for slide_path in self.slide_paths:
             drawing.add(slide_path)
@@ -867,12 +1103,15 @@ def _binary_solution_for_x(y, curve: list[tuple], s: slice = None, e=0.1):
         s = slice(0, 1)
 
     t = (s.start + s.stop) / 2
-    p = [(
-        curve[0][k] * (1 - t) ** 3 * t ** 0 * 1 +
-        curve[1][k] * (1 - t) ** 2 * t ** 1 * 3 +
-        curve[2][k] * (1 - t) ** 1 * t ** 2 * 3 +
-        curve[3][k] * (1 - t) ** 0 * t ** 3 * 1
-    ) for k in range(2)]
+    p = [
+        (
+            curve[0][k] * (1 - t) ** 3 * t**0 * 1
+            + curve[1][k] * (1 - t) ** 2 * t**1 * 3
+            + curve[2][k] * (1 - t) ** 1 * t**2 * 3
+            + curve[3][k] * (1 - t) ** 0 * t**3 * 1
+        )
+        for k in range(2)
+    ]
 
     # print(y, s, p)
 

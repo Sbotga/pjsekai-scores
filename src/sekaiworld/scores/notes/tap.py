@@ -11,7 +11,11 @@ class Tap(Note):
         return hash(str(self))
 
     def is_critical(self):
-        if self.type in (TapType.CRITICAL, TapType.CRITICAL_TREND, TapType.CRITICAL_CANCEL):
+        if self.type in (
+            TapType.CRITICAL,
+            TapType.CRITICAL_TREND,
+            TapType.CRITICAL_CANCEL,
+        ):
             return True
 
         return False

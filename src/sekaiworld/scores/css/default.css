@@ -1,3 +1,21 @@
+@font-face {
+    font-family: "NotoSansCJKEx";
+    src: url("__ASSETS__/NotoSansCJKEx-Medium.otf");
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: "NotoSansCJKEx";
+    src: url("__ASSETS__/NotoSansCJKEx-Medium.otf");
+    font-weight: 700;
+}
+
+@font-face {
+    font-family: "NotoSansCJKEx";
+    src: url("__ASSETS__/NotoSansCJKEx-Black.otf");
+    font-weight: 900;
+}
+
 .bar-line {
     stroke: #e2e2e2;
     stroke-width: 4;
@@ -11,7 +29,7 @@
 .bar-count-text {
     font-size: 12px;
     font-weight: 900;
-    font-family: Avenir;
+    font-family: "NotoSansCJKEx";
     fill: #ffffff;
     text-anchor: start;
 }
@@ -34,7 +52,7 @@
 .event-text {
     font-size: 12px;
     font-weight: 900;
-    font-family: Avenir;
+    font-family: "NotoSansCJKEx";
     fill: #fee300;
     text-anchor: start;
     letter-spacing: 4px;
@@ -47,14 +65,14 @@
 
 .speed-text {
     font-size: 12px;
-    font-family: Avenir;
+    font-family: "NotoSansCJKEx";
     fill: #ff33ff;
     text-anchor: end;
 }
 
 .lyric-text {
     font-size: 12px;
-    font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", Osaka, メイリオ, Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", "ＭＳ ゴシック" , "MS Gothic", "Noto Sans CJK JP", TakaoPGothic, sans-serif;
+    font-family: "NotoSansCJKEx", sans-serif;
     fill: #ffffff;
     text-anchor: start;
 }
@@ -87,7 +105,7 @@
 
 .tick-text {
     font-size: 12px;
-    font-family: Avenir;
+    font-family: "NotoSansCJKEx";
     fill: #e2e2e2;
     text-anchor: end;
 }
@@ -105,7 +123,7 @@
 .title {
     font-size: 96px;
     font-weight: 900;
-    font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", Osaka, メイリオ, Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", "ＭＳ ゴシック" , "MS Gothic", "Noto Sans CJK JP", TakaoPGothic, sans-serif;
+    font-family: "NotoSansCJKEx", sans-serif;
     fill: #ffffff;
     text-anchor: start;
 }
@@ -113,7 +131,7 @@
 .subtitle {
     font-size: 48px;
     font-weight: 700;
-    font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", Osaka, メイリオ, Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", "ＭＳ ゴシック" , "MS Gothic", "Noto Sans CJK JP", TakaoPGothic, sans-serif;
+    font-family: "NotoSansCJKEx", sans-serif;
     fill: #ffffff;
     text-anchor: start;
 }

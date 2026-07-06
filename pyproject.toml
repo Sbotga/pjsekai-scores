@@ -31,10 +31,10 @@ dev = [
 "Bug Tracker" = "https://github.com/Sekai-World/pjsekai-scores/issues"
 
 [tool.setuptools.package-data]
-"*" = ["*.css"]
+"*" = ["*.css", "*.png", "*.otf"]
 
 [tool.bumpver]
-current_version = "v0.1.11"
+current_version = "v0.1.12"
 version_pattern = "vMAJOR.MINOR.PATCH[PYTAGNUM]"
 commit_message = "bump version {old_version} -> {new_version}"
 tag_message = "{new_version}"
