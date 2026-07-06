@@ -5,7 +5,7 @@ from .notes import *
 from .types import *
 
 from .meta import *
-from .line import *
+from . import sus
 
 __all__ = ["Score"]
 
@@ -17,49 +17,242 @@ class Score:
         self.notes: list[Note] = []
         self.events: list[Event] = []
 
-    def _init_by_lines(self, lines: list[Line]):
+    def _init_by_sus(self, chart: sus.SusChart) -> None:
         self.meta = Meta()
         self.notes = []
         self.events = []
 
-        bpm_definitions: dict[int, Fraction] = {}
-        speed_definitions: dict[int, SpeedDefinition] = {}
-        speed_control = SpeedControl(None)
-        ticks_per_beat = TicksPerBeat(480)
+        for key, value in chart.metas.items():
+            field = key.lower()
+            if not hasattr(self.meta, field):
+                continue
+            if field in ("waveoffset", "movieoffset", "basebpm"):
+                try:
+                    setattr(self.meta, field, float(value))
+                except ValueError:
+                    setattr(self.meta, field, value)
+            else:
+                setattr(self.meta, field, value)
 
-        for line in lines:
-            for object in line.parse():
-                match object:
-                    case Meta():
-                        self.meta |= object
+        for measure, length in chart.bar_lengths:
+            self.events.append(
+                Event(
+                    bar=Fraction(measure),
+                    bar_length=Fraction(
+                        int(length * chart.ticks_per_beat), chart.ticks_per_beat
+                    ),
+                )
+            )
 
-                    case TicksPerBeat():
-                        self.ticks_per_beat = object
+        if chart.bpms:
+            for tick, bpm in chart.bpms:
+                self.events.append(Event(bar=chart.tick_to_bar(tick), bpm=bpm))
+        else:
+            self.events.append(Event(bar=Fraction(0), bpm=Fraction(120)))
 
-                    case SpeedControl():
-                        speed_control = object
+        for tick, speed in chart.speeds:
+            self.events.append(Event(bar=chart.tick_to_bar(tick), speed=speed))
 
-                    case SpeedDefinition():
-                        speed_definitions[object.id] = object
-                        for item in object.items:
-                            bar = item.bar + Fraction(item.tick, ticks_per_beat * 4)
-                            self.events.append(Event(bar=bar, speed=item.speed))
+        flicks: dict[tuple[int, int], DirectionalType] = {}
+        ease_ins: set[tuple[int, int]] = set()
+        ease_outs: set[tuple[int, int]] = set()
+        criticals: set[tuple[int, int]] = set()
+        step_ignores: set[tuple[int, int]] = set()
+        frictions: set[tuple[int, int]] = set()
+        hiddens: set[tuple[int, int]] = set()
+        slide_keys: set[tuple[int, int]] = set()
 
-                    case Event():
-                        self.events.append(object)
+        for directional in chart.directionals:
+            key = (directional.tick, directional.lane)
+            if directional.type == 1:
+                flicks[key] = DirectionalType.UP
+            elif directional.type == 3:
+                flicks[key] = DirectionalType.UPPER_LEFT
+            elif directional.type == 4:
+                flicks[key] = DirectionalType.UPPER_RIGHT
+            elif directional.type == 2:
+                ease_ins.add(key)
+            elif directional.type in (5, 6):
+                ease_outs.add(key)
 
-                    case BpmDefinition():
-                        bpm_definitions[object.id] = object.bpm
+        for tap in chart.taps:
+            key = (tap.tick, tap.lane)
+            if tap.type == 2:
+                criticals.add(key)
+            elif tap.type == 3:
+                step_ignores.add(key)
+            elif tap.type == 5:
+                frictions.add(key)
+            elif tap.type == 6:
+                criticals.add(key)
+                frictions.add(key)
+            elif tap.type == 7:
+                hiddens.add(key)
+            elif tap.type == 8:
+                hiddens.add(key)
+                criticals.add(key)
 
-                    case BpmReference():
-                        self.events.append(
-                            Event(bar=object.bar, bpm=bpm_definitions[object.id])
+        for hold in chart.slides:
+            for point in hold:
+                if point.type in (1, 2, 3, 5):
+                    slide_keys.add((point.tick, point.lane))
+
+        def modifier_tap(
+            slide: Slide, key: tuple[int, int], critical: bool
+        ) -> Tap | None:
+            if key in hiddens:
+                type = TapType.CRITICAL_CANCEL if critical else TapType.CANCEL
+            elif key in frictions:
+                type = TapType.CRITICAL_TREND if critical else TapType.TREND
+            elif critical:
+                type = TapType.CRITICAL
+            else:
+                return None
+            return Tap(bar=slide.bar, lane=slide.lane, width=slide.width, type=type)
+
+        def ease_directional(slide: Slide, key: tuple[int, int]) -> Directional | None:
+            if key in ease_ins:
+                type = DirectionalType.DOWN
+            elif key in ease_outs:
+                type = DirectionalType.LOWER_LEFT
+            else:
+                return None
+            return Directional(
+                bar=slide.bar, lane=slide.lane, width=slide.width, type=type
+            )
+
+        seen_taps: set[tuple[int, int]] = set()
+        for note in sorted(chart.taps, key=lambda n: n.tick):
+            bar = chart.tick_to_bar(note.tick)
+
+            if note.type == 4:
+                self.events.append(Event(bar=bar, text="SKILL"))
+                continue
+
+            if note.lane == sus.FEVER_LANE and note.width == 1:
+                if note.type == 1:
+                    self.events.append(Event(bar=bar, text="FEVER CHANCE!"))
+                elif note.type == 2:
+                    self.events.append(Event(bar=bar, text="SUPER FEVER!!"))
+                continue
+
+            if note.type in (7, 8):
+                continue
+
+            if note.lane < sus.MIN_LANE or note.lane > sus.MAX_LANE:
+                continue
+
+            key = (note.tick, note.lane)
+            if key in slide_keys:
+                continue
+
+            if key in seen_taps:
+                continue
+            seen_taps.add(key)
+
+            critical = key in criticals
+            friction = key in frictions
+            tap = Tap(
+                bar=bar,
+                lane=note.lane,
+                width=note.width,
+                type=(
+                    TapType.CRITICAL_TREND
+                    if critical and friction
+                    else (
+                        TapType.TREND
+                        if friction
+                        else TapType.CRITICAL if critical else TapType.TAP
+                    )
+                ),
+            )
+
+            direction = flicks.get(key)
+            if direction is not None:
+                self.notes.append(
+                    Directional(
+                        bar=bar,
+                        lane=note.lane,
+                        width=note.width,
+                        type=direction,
+                        tap=tap,
+                    )
+                )
+            else:
+                self.notes.append(tap)
+
+        def build_holds(holds: list[list[sus.SusNote]], decoration: bool) -> None:
+            for hold in holds:
+                if len(hold) < 2 or not any(n.type in (1, 2) for n in hold):
+                    continue
+
+                start_key = (hold[0].tick, hold[0].lane)
+                critical = start_key in criticals
+
+                chain: list[Slide] = []
+                for point in hold:
+                    if point.type not in (1, 2, 3, 5):
+                        continue
+                    key = (point.tick, point.lane)
+                    slide = Slide(
+                        bar=chart.tick_to_bar(point.tick),
+                        lane=point.lane,
+                        width=point.width,
+                        type=SlideType(point.type),
+                        channel=point.channel,
+                        decoration=decoration,
+                    )
+
+                    if decoration:
+                        if point.type == 1 and critical:
+                            slide.tap = Tap(
+                                bar=slide.bar,
+                                lane=slide.lane,
+                                width=slide.width,
+                                type=TapType.CRITICAL_CANCEL,
+                            )
+                        slide.directional = ease_directional(slide, key)
+                    elif point.type == 1:
+                        slide.tap = modifier_tap(slide, key, critical)
+                        slide.directional = ease_directional(slide, key)
+                    elif point.type == 5:
+                        slide.directional = ease_directional(slide, key)
+                    elif point.type == 2:
+                        slide.tap = modifier_tap(
+                            slide, key, critical or key in criticals
                         )
+                        direction = flicks.get(key)
+                        if direction is not None:
+                            slide.directional = Directional(
+                                bar=slide.bar,
+                                lane=slide.lane,
+                                width=slide.width,
+                                type=direction,
+                            )
+                    elif point.type == 3:
+                        if key in step_ignores:
+                            slide.tap = Tap(
+                                bar=slide.bar,
+                                lane=slide.lane,
+                                width=slide.width,
+                                type=TapType.FLICK,
+                            )
+                        else:
+                            slide.directional = ease_directional(slide, key)
 
-                    case Note():
-                        self.notes.append(object)
+                    if chain:
+                        chain[-1].next = slide
+                    chain.append(slide)
 
-        self._init_notes()
+                for slide in chain:
+                    slide.head = chain[0]
+
+                self.notes.extend(chain)
+
+        build_holds(chart.slides, False)
+        build_holds(chart.guides, True)
+
+        self.notes.sort()
         self._init_events()
 
     def _init_notes(self):
@@ -173,7 +366,7 @@ class Score:
     def open(cls, file: str, *args, **kwargs):
         self = cls()
         with open(file, *args, **kwargs) as f:
-            self._init_by_lines([Line(line) for line in f.readlines()])
+            self._init_by_sus(sus.loads(f.read()))
 
         return self
 
