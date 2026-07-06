@@ -1,12 +1,12 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta:__legacy__"
 
 [project]
 name = "sekaiworld.scores"
 description = "Render Project Sekai score files (sus) to images (svg). Powered by pjsekai/scores."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 license = { file = "LICENSE" }
 authors = [{ name = "Sekai World", email = "dev@sekai.best" }]
 keywords = ["Project Sekai", "pjsekai", "SUS"]
@@ -18,6 +18,13 @@ classifiers = [
 dependencies = ["svgwrite"]
 dynamic = ["version"]
 
+[dependency-groups]
+dev = [
+    "build",
+    "bumpver",
+    "twine",
+]
+
 [project.urls]
 "Homepage" = "https://github.com/Sekai-World/pjsekai-scores"
 "Documentation" = "https://github.com/Sekai-World/pjsekai-scores/wiki"
@@ -27,7 +34,7 @@ dynamic = ["version"]
 "*" = ["*.css"]
 
 [tool.bumpver]
-current_version = "v0.1.10"
+current_version = "v0.1.11"
 version_pattern = "vMAJOR.MINOR.PATCH[PYTAGNUM]"
 commit_message = "bump version {old_version} -> {new_version}"
 tag_message = "{new_version}"
@@ -50,4 +57,3 @@ push = true
     "{version}",
     "{pep440_version}",
 ]
-

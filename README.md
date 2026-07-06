@@ -13,8 +13,9 @@ pip install git+https://github.com/Sbogta/pjsekai-scores
 Build and install manually：
 
 ```
-python -m build
-pip install dist/sekaiworld.scores-*.whl
+uv sync --all-groups
+uv run python -m build
+uv pip install dist/sekaiworld.scores-*.whl
 ```
 
 ## Usage
@@ -22,7 +23,7 @@ pip install dist/sekaiworld.scores-*.whl
 Project Sekai Scores includes a default script that can load a local SUS score file and convert it to an SVG vector image. This can be done with the following command：
 
 ```
-python -m sekaiworld.scores <xxx.sus>
+uv run python -m sekaiworld.scores <xxx.sus>
 ```
 
 Here is an example of using it as a package to generate a chart image:
