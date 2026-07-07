@@ -1,48 +1,50 @@
 # Project Sekai Scores
 
-Analyzes PJSK music score files (.sus) and generates vector images (SVG).
+Renders PJSK music scores to chart images (PNG). Takes a
+[sonolus-level-converters](https://github.com/UntitledCharts/sonolus-level-converters)
+`Score` object as input, with loaders included for `.sus` files and pjsk server
+json.
 
 ## Installation
 
 Install with pip：
 
 ```
-pip install git+https://github.com/Sbogta/pjsekai-scores
-```
-
-Build and install manually：
-
-```
-uv sync --all-groups
-uv run python -m build
-uv pip install dist/sekaiworld.scores-*.whl
+pip install git+https://github.com/Sbotga/pjsekai-scores
 ```
 
 ## Usage
 
-Project Sekai Scores includes a default script that can load a local SUS score file and convert it to an SVG vector image. This can be done with the following command：
+Render a score file from the command line：
 
 ```
-uv run python -m sekaiworld.scores <xxx.sus>
+python -m sekaiworld.scores <xxx.sus> [--title ...] [--artist ...] [--difficulty ...] [--playlevel ...] [--jacket <path or url>] [-o <xxx.png>]
 ```
+
+pjsk json score files are detected by their `.json` extension.
 
 Here is an example of using it as a package to generate a chart image:
 
 ```python
-import sekaiworld.scores
+from sekaiworld.scores import ChartRenderer, load_sus, load_pjsk
 
-score = sekaiworld.scores.Score.open('1.sus', encoding='UTF-8')
-drawing = sekaiworld.scores.Drawing(score=score)
-drawing.svg().saveas('1.svg')
+score, bar_lengths = load_sus('1.sus')  # or load_pjsk('1.json')
+
+renderer = ChartRenderer(
+    score,                # a sonolus_converters Score
+    title='Tell Your World',
+    difficulty='master',
+    jacket='jacket.png',  # path or http(s) url, optional
+    bar_lengths=bar_lengths,
+)
+renderer.render().save('1.png')  # render() returns a PIL.Image
 ```
 
-We provide customization features to enrich and personalize your music score files. Please refer to the following documents:
-
-* [Convert BPM, Time Signature, Section](https://gitlab.com/pjsekai/scores/-/wikis/rebase)
-
-* [Add lyrics](https://gitlab.com/pjsekai/scores/-/wikis/lyric)
-
-* [Customize your stylesheet](https://gitlab.com/pjsekai/scores/-/wikis/css)
+Any `sonolus_converters` `Score` works as input. Only the note types the chart
+view draws are supported: BPM changes, time scale changes (drawn as speed
+lines), singles, slides, guides, and skill/fever markers. `bar_lengths` carries
+the time signatures (`load_sus` reads them from the file; pjsk json has none,
+so those charts render as 4/4).
 
 ## License
 

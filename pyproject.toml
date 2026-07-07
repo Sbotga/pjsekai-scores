@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta:__legacy__"
 
 [project]
 name = "sekaiworld.scores"
-description = "Render Project Sekai score files (sus) to images (svg). Powered by pjsekai/scores."
+description = "Render Project Sekai scores (sus / pjsk json) to chart images (png). Powered by pjsekai/scores."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { file = "LICENSE" }
@@ -15,7 +15,11 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-dependencies = ["Pillow", "numpy", "sonolus-level-converters"]
+dependencies = [
+    "Pillow",
+    "numpy",
+    "sonolus-level-converters @ git+https://github.com/UntitledCharts/sonolus-level-converters",
+]
 dynamic = ["version"]
 
 [dependency-groups]
