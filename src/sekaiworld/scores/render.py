@@ -497,6 +497,22 @@ class ChartRenderer:
         _SCALED_CACHE[key] = result
         return result
 
+    def _fit_image(
+        self, name: str, box_w: float, box_h: float, flip: bool = False
+    ) -> tuple[Image.Image | None, float, float]:
+        """Uniform-scale into the box, centered (SVG xMidYMid meet).
+
+        Returns the scaled image plus the (x, y) letterbox offsets within the
+        box."""
+        source = self._sprite(name)
+        if source is None or box_w <= 0 or box_h <= 0:
+            return None, 0.0, 0.0
+        scale = min(box_w / source.width, box_h / source.height)
+        draw_w = max(1, round(source.width * scale))
+        draw_h = max(1, round(source.height * scale))
+        image = self._scaled_image(name, draw_w, draw_h, flip)
+        return image, (box_w - draw_w) / 2, (box_h - draw_h) / 2
+
     def _font(self, size: int, weight: int) -> ImageFont.FreeTypeFont:
         file = str(_FONT_BLACK if weight >= 900 else _FONT_MEDIUM)
         key = (file, size)
@@ -829,9 +845,16 @@ class ChartRenderer:
         if jacket is None:
             jacket = self._load_image(str(_ASSETS / "jacket_placeholder.png"))
         if jacket is not None:
-            resized = jacket.resize((META_SIZE, META_SIZE), Image.Resampling.LANCZOS)
+            scale = min(META_SIZE / jacket.width, META_SIZE / jacket.height)
+            draw_w = max(1, round(jacket.width * scale))
+            draw_h = max(1, round(jacket.height * scale))
+            resized = jacket.resize((draw_w, draw_h), Image.Resampling.LANCZOS)
             canvas.alpha_composite(
-                resized, (LANE_PADDING * 2, chart_h + TIME_PADDING * 3)
+                resized,
+                (
+                    round(LANE_PADDING * 2 + (META_SIZE - draw_w) / 2),
+                    round(chart_h + TIME_PADDING * 3 + (META_SIZE - draw_h) / 2),
+                ),
             )
 
         title = " - ".join(filter(None, [self.title, self.artist])) or "Untitled"
@@ -1172,17 +1195,21 @@ class ChartRenderer:
         for x, y, critical in amongs:
             w = LANE_WIDTH
             name = "notes_long_among_crtcl.png" if critical else "notes_long_among.png"
-            image = self._scaled_image(name, round(w), round(w))
+            image, off_x, off_y = self._fit_image(name, round(w), round(w))
             if image is not None:
-                canvas.alpha_composite(image, (round(x - w / 2), round(y - w / 2)))
+                canvas.alpha_composite(
+                    image, (round(x - w / 2 + off_x), round(y - w / 2 + off_y))
+                )
 
         for beat, lane, note_width, name in frictions:
             y = bar_y(beat)
             x = LANE_WIDTH * (lane + note_width / 2 - 2) + LANE_PADDING
             w = LANE_WIDTH * 0.75
-            image = self._scaled_image(name, round(w), round(w))
+            image, off_x, off_y = self._fit_image(name, round(w), round(w))
             if image is not None:
-                canvas.alpha_composite(image, (round(x - w / 2), round(y - w / 2)))
+                canvas.alpha_composite(
+                    image, (round(x - w / 2 + off_x), round(y - w / 2 + off_y))
+                )
 
         flicks.sort(key=lambda f: f[0])
         for beat, lane, note_width, direction, critical in reversed(flicks):
@@ -1202,7 +1229,7 @@ class ChartRenderer:
                 width_units,
                 "_diagonal" if diagonal else "",
             )
-            image = self._scaled_image(
+            image, off_x, off_y = self._fit_image(
                 name, round(arrow_w), round(arrow_h), flip=direction == "right"
             )
             if image is None:
@@ -1212,7 +1239,10 @@ class ChartRenderer:
             if direction == "right":
                 origin = round(x + bias)
                 dest_x = 2 * origin - (dest_x + round(arrow_w))
-            canvas.alpha_composite(image, (dest_x, round(y + NOTE_SIZE / 4 - arrow_h)))
+            canvas.alpha_composite(
+                image,
+                (round(dest_x + off_x), round(y + NOTE_SIZE / 4 - arrow_h + off_y)),
+            )
 
     def _draw_ticks(
         self,
