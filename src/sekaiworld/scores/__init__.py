@@ -1,13 +1,5 @@
-"""
-score Format Specification v2.7 (rev2)
+"""Render Project Sekai charts (sonolus-level-converters Score objects) to PNG."""
 
-https://gist.github.com/kb10uy/c171c175ba913dc40a73c6ce69da9859
-"""
+from .render import ChartRenderer, load_pjsk, load_sus, render_score
 
-from .notes import *
-from .types import *
-
-from .score import *
-from .drawing import *
-from .rebase import *
-from .lyric import *
+__all__ = ["ChartRenderer", "load_pjsk", "load_sus", "render_score"]
