@@ -209,17 +209,34 @@ def _parse_bar_lengths(sus_text: str) -> list[tuple[int, float]]:
     return bar_lengths
 
 
-def load_sus(file: typing.Union[str, Path]) -> tuple[Score, list[tuple[int, float]]]:
+_Source = typing.Union[str, Path, bytes, typing.IO]
+
+
+def _read_text(source: _Source) -> str:
+    """Text from a path, bytes, or a file-like (StringIO/BytesIO) — no temp files."""
+    if isinstance(source, (str, Path)):
+        return Path(source).read_text(encoding="utf-8")
+    if isinstance(source, bytes):
+        return source.decode("utf-8")
+    data = source.read()
+    return data.decode("utf-8") if isinstance(data, bytes) else data
+
+
+def load_sus(file: _Source) -> tuple[Score, list[tuple[int, float]]]:
     import sonolus_converters
 
-    text = Path(file).read_text(encoding="utf-8")
+    text = _read_text(file)
     score = sonolus_converters.sus.load(io.StringIO(text))
     return score, _parse_bar_lengths(text)
 
 
-def load_pjsk(file: typing.Union[str, Path]) -> tuple[Score, list[tuple[int, float]]]:
+def load_pjsk(file: _Source) -> tuple[Score, list[tuple[int, float]]]:
     import sonolus_converters
 
+    # pjsk.load takes PathLike | IO[bytes] | bytes | str; collapse any file-like
+    # to its contents so StringIO/BytesIO work too — all in memory.
+    if not isinstance(file, (str, Path, bytes)):
+        file = file.read()
     score = sonolus_converters.pjsk.load(file)
     return score, [(0, 4.0)]
 
@@ -287,6 +304,7 @@ class ChartRenderer:
         difficulty: str | None = None,
         playlevel: str | None = None,
         jacket: str | None = None,
+        chart_id: str | None = None,
         bar_lengths: list[tuple[int, float]] | None = None,
     ):
         self.title = title if title is not None else score.metadata.title
@@ -294,6 +312,7 @@ class ChartRenderer:
         self.difficulty = difficulty
         self.playlevel = playlevel
         self.jacket = jacket
+        self.chart_id = chart_id
 
         self._images: dict[str, Image.Image | None] = {}
         self._text_tiles: dict[tuple, tuple[Image.Image, int, int, float, int, int]] = (
@@ -826,7 +845,7 @@ class ChartRenderer:
         draw.rectangle([0, meta_y, total_w - 1, total_h - 1], fill=META_FILL)
         draw.rectangle([0, meta_y - 1, total_w - 1, meta_y], fill=LIGHT)
 
-        self._draw_meta(canvas, draw, chart_h)
+        self._draw_meta(canvas, draw, chart_h, total_w)
 
         x = LANE_PADDING
         for (start, stop), height in zip(ranges, heights):
@@ -837,7 +856,11 @@ class ChartRenderer:
         return canvas.convert("RGB")
 
     def _draw_meta(
-        self, canvas: Image.Image, draw: ImageDraw.ImageDraw, chart_h: int
+        self,
+        canvas: Image.Image,
+        draw: ImageDraw.ImageDraw,
+        chart_h: int,
+        total_w: int,
     ) -> None:
         jacket = None
         if self.jacket:
@@ -888,6 +911,20 @@ class ChartRenderer:
             weight=700,
             fill=WHITE,
         )
+
+        if self.chart_id:
+            id_size = 64  # medium — between the title (96) and subtitle (48)
+            self._draw_text(
+                canvas,
+                draw,
+                str(self.chart_id),
+                total_w - LANE_PADDING * 2,
+                chart_h + TIME_PADDING * 3 + META_SIZE // 2 + round(id_size * 0.35),
+                size=id_size,
+                weight=700,
+                fill=WHITE,
+                anchor="end",
+            )
 
     # --- sentence rendering -----------------------------------------------------------
 

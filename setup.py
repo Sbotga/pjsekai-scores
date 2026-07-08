@@ -1,5 +1,5 @@
 import setuptools
 
-version = "v0.1.13"
+version = "v0.1.14"
 
 setuptools.setup(version=version)
