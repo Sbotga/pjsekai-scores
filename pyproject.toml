@@ -18,7 +18,7 @@ classifiers = [
 dependencies = [
     "Pillow",
     "numpy",
-    "sonolus-converters @ git+https://github.com/UntitledCharts/sonolus-level-converters",
+    "rg-converters",
 ]
 dynamic = ["version"]
 

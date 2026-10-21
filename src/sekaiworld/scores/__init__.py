@@ -1,4 +1,4 @@
-"""Render Project Sekai charts (sonolus-level-converters Score objects) to PNG."""
+"""Render Project Sekai charts (rg_converters Score objects) to PNG."""
 
 from .render import ChartRenderer, load_pjsk, load_sus, render_score
 

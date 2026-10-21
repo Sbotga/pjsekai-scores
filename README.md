@@ -1,7 +1,7 @@
 # Project Sekai Scores
 
 Renders PJSK music scores to chart images (PNG). Takes a
-[sonolus-level-converters](https://github.com/UntitledCharts/sonolus-level-converters)
+[rg_converters](https://pypi.org/project/rg-converters/)
 `Score` object as input, with loaders included for `.sus` files and pjsk server
 json.
 
@@ -31,7 +31,7 @@ from sekaiworld.scores import ChartRenderer, load_sus, load_pjsk
 score, bar_lengths = load_sus('1.sus')  # or load_pjsk('1.json')
 
 renderer = ChartRenderer(
-    score,                # a sonolus_converters Score
+    score,                # a rg_converters Score
     title='Tell Your World',
     difficulty='master',
     jacket='jacket.png',  # path or http(s) url, optional
@@ -40,7 +40,7 @@ renderer = ChartRenderer(
 renderer.render().save('1.png')  # render() returns a PIL.Image
 ```
 
-Any `sonolus_converters` `Score` works as input. Only the note types the chart
+Any `rg_converters` `Score` works as input. Only the note types the chart
 view draws are supported: BPM changes, time scale changes (drawn as speed
 lines), singles, slides, guides, and skill/fever markers. `bar_lengths` carries
 the time signatures (`load_sus` reads them from the file; pjsk json has none,

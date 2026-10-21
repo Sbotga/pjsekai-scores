@@ -1,6 +1,6 @@
-"""Render a sonolus-level-converters Score to a chart PNG.
+"""Render a rg_converters Score to a chart PNG.
 
-The renderer consumes ``sonolus_converters.notes.score.Score`` objects directly
+The renderer consumes ``rg_converters.core.score.Score`` objects directly
 and paints with Pillow + NumPy. Only the note types and attributes the chart
 view draws are supported: Bpm, TimeScaleGroup (speed lines), Single, Slide,
 Guide, Skill and Fever markers. speedRatio, timeScaleGroup assignment, Volume
@@ -19,17 +19,17 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-from sonolus_converters.notes.bpm import Bpm
-from sonolus_converters.notes.guide import Guide
-from sonolus_converters.notes.score import Score
-from sonolus_converters.notes.single import FeverChance, FeverStart, Single, Skill
-from sonolus_converters.notes.slide import (
+from rg_converters.core.bpm import Bpm
+from rg_converters.core.guide import Guide
+from rg_converters.core.score import Score
+from rg_converters.core.single import FeverChance, FeverStart, Single, Skill
+from rg_converters.core.slide import (
     Slide,
     SlideEndPoint,
     SlideRelayPoint,
     SlideStartPoint,
 )
-from sonolus_converters.notes.timescale import TimeScaleGroup
+from rg_converters.core.timescale import TimeScaleGroup
 
 __all__ = ["ChartRenderer", "render_score", "load_sus", "load_pjsk"]
 
@@ -223,21 +223,21 @@ def _read_text(source: _Source) -> str:
 
 
 def load_sus(file: _Source) -> tuple[Score, list[tuple[int, float]]]:
-    import sonolus_converters
+    import rg_converters
 
     text = _read_text(file)
-    score = sonolus_converters.sus.load(io.StringIO(text))
+    score = rg_converters.converters.sus.load(io.StringIO(text))
     return score, _parse_bar_lengths(text)
 
 
 def load_pjsk(file: _Source) -> tuple[Score, list[tuple[int, float]]]:
-    import sonolus_converters
+    import rg_converters
 
     # pjsk.load takes PathLike | IO[bytes] | bytes | str; collapse any file-like
     # to its contents so StringIO/BytesIO work too — all in memory.
     if not isinstance(file, (str, Path, bytes)):
         file = file.read()
-    score = sonolus_converters.pjsk.load(file)
+    score = rg_converters.converters.pjsk.load(file)
     return score, [(0, 4.0)]
 
 
